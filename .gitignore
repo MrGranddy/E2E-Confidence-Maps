@@ -166,3 +166,7 @@ logs/
 data/
 confidence_maps/
 all_params/
+
+# Not mine scripts
+confidence_with_dg.py
+EdgeHistogramSRAD.py
