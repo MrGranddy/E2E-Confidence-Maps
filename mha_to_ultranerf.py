@@ -2,14 +2,15 @@ import argparse
 import math
 import os
 
+import nibabel as nib
 import numpy as np
-
+import SimpleITK as sitk
 from PIL import Image
 
-import SimpleITK as sitk
-import nibabel as nib
 
-def create_linear_transform(x_translation, y_translation, z_translation, x_rotation, y_rotation, z_rotation):
+def create_linear_transform(
+    x_translation, y_translation, z_translation, x_rotation, y_rotation, z_rotation
+):
     """Creates a linear transformation from the given parameters.
 
     Args:
@@ -30,40 +31,49 @@ def create_linear_transform(x_translation, y_translation, z_translation, x_rotat
     z_rotation = math.radians(z_rotation)
 
     # Create the rotation matrices for each axis.
-    Rx = np.array([
-        [1, 0, 0, 0],
-        [0, math.cos(x_rotation), -math.sin(x_rotation), 0],
-        [0, math.sin(x_rotation), math.cos(x_rotation), 0],
-        [0, 0, 0, 1]
-    ])
+    Rx = np.array(
+        [
+            [1, 0, 0, 0],
+            [0, math.cos(x_rotation), -math.sin(x_rotation), 0],
+            [0, math.sin(x_rotation), math.cos(x_rotation), 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
-    Ry = np.array([
-        [math.cos(y_rotation), 0, math.sin(y_rotation), 0],
-        [0, 1, 0, 0],
-        [-math.sin(y_rotation), 0, math.cos(y_rotation), 0],
-        [0, 0, 0, 1]
-    ])
+    Ry = np.array(
+        [
+            [math.cos(y_rotation), 0, math.sin(y_rotation), 0],
+            [0, 1, 0, 0],
+            [-math.sin(y_rotation), 0, math.cos(y_rotation), 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
-    Rz = np.array([
-        [math.cos(z_rotation), -math.sin(z_rotation), 0, 0],
-        [math.sin(z_rotation), math.cos(z_rotation), 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-    ])
+    Rz = np.array(
+        [
+            [math.cos(z_rotation), -math.sin(z_rotation), 0, 0],
+            [math.sin(z_rotation), math.cos(z_rotation), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ]
+    )
 
     # Combine the rotations into a single rotation matrix.
     rotation_matrix = Rz @ Ry @ Rx
 
     # Create the translation matrix.
-    translation_matrix = np.array([
-        [1, 0, 0, x_translation],
-        [0, 1, 0, y_translation],
-        [0, 0, 1, z_translation],
-        [0, 0, 0, 1]
-    ])
+    translation_matrix = np.array(
+        [
+            [1, 0, 0, x_translation],
+            [0, 1, 0, y_translation],
+            [0, 0, 1, z_translation],
+            [0, 0, 0, 1],
+        ]
+    )
 
     # Combine the rotation and translation matrices.
     return translation_matrix @ rotation_matrix
+
 
 def apply_transform_to_poses(poses, transform):
     """Applies a transformation matrix to pose matrices.
@@ -85,12 +95,15 @@ def apply_transform_to_poses(poses, transform):
     translation_to_origin[:3, 3] = -centroid
 
     # Apply the translation to center all poses at the origin
-    centered_poses = np.array([translation_to_origin @ pose for pose in transformed_poses])
+    centered_poses = np.array(
+        [translation_to_origin @ pose for pose in transformed_poses]
+    )
 
     return centered_poses
 
 
 transform_template = "Seq_Frame{:04d}_ImageToReferenceTransform"
+
 
 def poses_from_mha_image(image):
     """Extracts the tracking information from the given MHA image.
@@ -111,15 +124,18 @@ def poses_from_mha_image(image):
     ]
 
     # Convert to transformation matrices
-    transform_matrix = np.stack([
-        np.array(list(map(float, line.split()))).reshape(4, 4) for line in transform_lines
-    ], axis=0 )
+    transform_matrix = np.stack(
+        [
+            np.array(list(map(float, line.split()))).reshape(4, 4)
+            for line in transform_lines
+        ],
+        axis=0,
+    )
 
     return transform_matrix
 
 
 def read_mha_file(file_path):
-
     # Read the MHA file.
     image = sitk.ReadImage(file_path)
 
@@ -132,12 +148,14 @@ def read_mha_file(file_path):
     # Get poses
     poses = poses_from_mha_image(image)
 
-    print(f"For file {os.path.basename(file_path)}: Probe width: {image_spacing[0] * image_data.shape[2]}, probe depth: {image_spacing[1] * image_data.shape[1]}")
+    print(
+        f"For file {os.path.basename(file_path)}: Probe width: {image_spacing[0] * image_data.shape[2]}, probe depth: {image_spacing[1] * image_data.shape[1]}"
+    )
 
     return image_data, poses, image_spacing
 
+
 def main(args):
-    
     # Read the MHA file.
     image_data, poses, image_spacing = read_mha_file(args.input)
 
@@ -169,9 +187,11 @@ def main(args):
 
     print(f"Saved images and poses to {args.output}")
 
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Converts a MHA file to an UltraNerf dataset.")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Converts a MHA file to an UltraNerf dataset."
+    )
     parser.add_argument("input", type=str, help="The input MHA file.")
     parser.add_argument("output", type=str, help="The output directory.")
 

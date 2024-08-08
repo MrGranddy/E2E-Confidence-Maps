@@ -4,13 +4,16 @@ import os
 from PIL import Image
 
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description="Check the shapes of the data in the dataset.")
-    parser.add_argument("data_dir", type=str, help="The directory containing the dataset.")
+    parser = argparse.ArgumentParser(
+        description="Check the shapes of the data in the dataset."
+    )
+    parser.add_argument(
+        "data_dir", type=str, help="The directory containing the dataset."
+    )
     args = parser.parse_args()
 
     images_dir = os.path.join(args.data_dir, "images")
-    
+
     # Load a single image to get the shape
     image = Image.open(os.path.join(images_dir, "0.png"))
 

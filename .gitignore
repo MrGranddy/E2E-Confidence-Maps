@@ -166,6 +166,9 @@ logs/
 data/
 confidence_maps/
 all_params/
+CM_datasets/
+*.png
+events.out.tfevents.*
 
 # Not mine scripts
 confidence_with_dg.py

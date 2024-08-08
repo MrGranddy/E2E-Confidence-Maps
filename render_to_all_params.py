@@ -5,11 +5,22 @@ import shutil
 import numpy as np
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_path", type=str, default="render", help="Path to the directory containing the rendered images")
-    parser.add_argument("--participant_name", type=str, default="test", help="Name of the participant")
-    parser.add_argument("--destination_dir", type=str, default="output", help="Path to the directory where the confidence maps will be saved")
+    parser.add_argument(
+        "--input_path",
+        type=str,
+        default="render",
+        help="Path to the directory containing the rendered images",
+    )
+    parser.add_argument(
+        "--participant_name", type=str, default="test", help="Name of the participant"
+    )
+    parser.add_argument(
+        "--destination_dir",
+        type=str,
+        default="output",
+        help="Path to the directory where the confidence maps will be saved",
+    )
     args = parser.parse_args()
 
     # Set saving parameters

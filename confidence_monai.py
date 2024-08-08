@@ -1,13 +1,13 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-import numpy as np
 import cv2
-
-from scipy.sparse import csc_matrix
+import numpy as np
+from scipy import ndimage as ndi
+from scipy import sparse
 from scipy.signal import hilbert
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import cg, spsolve
 
-from scipy import sparse, ndimage as ndi
-from scipy.sparse.linalg import spsolve, cg
 
 class UltrasoundConfidenceMap:
     """Compute confidence map from an ultrasound image.
@@ -32,7 +32,6 @@ class UltrasoundConfidenceMap:
         sink_mode: str = "all",
         solve_mode: str = "scipy",
     ):
-
         # The hyperparameters for confidence map estimation
         self.alpha = alpha
         self.beta = beta
@@ -49,10 +48,13 @@ class UltrasoundConfidenceMap:
 
         if self.solve_mode == "octave":
             from oct2py import Oct2Py
+
             # Octave instance for computing the confidence map
             self.oc = Oct2Py()
 
-    def sub2ind(self, size: Tuple[int], rows: np.ndarray, cols: np.ndarray) -> np.ndarray:
+    def sub2ind(
+        self, size: Tuple[int], rows: np.ndarray, cols: np.ndarray
+    ) -> np.ndarray:
         """Converts row and column subscripts into linear indices,
         basically the copy of the MATLAB function of the same name.
         https://www.mathworks.com/help/matlab/ref/sub2ind.html
@@ -70,7 +72,12 @@ class UltrasoundConfidenceMap:
         indices = rows + cols * size[0]
         return indices
 
-    def get_seed_and_labels(self, data : np.ndarray, sink_mode: str = "all", sink_mask: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def get_seed_and_labels(
+        self,
+        data: np.ndarray,
+        sink_mode: str = "all",
+        sink_mask: Optional[np.ndarray] = None,
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """Get the seed and label arrays for the max-flow algorithm
 
         Args:
@@ -119,7 +126,9 @@ class UltrasoundConfidenceMap:
             # Minimum element in the last row (excluding 10% from the edges)
             ten_percent = int(data.shape[1] * 0.1)
             min_val = np.min(data[-1, ten_percent:-ten_percent])
-            min_idxs = np.where(data[-1, ten_percent:-ten_percent] == min_val)[0] + ten_percent
+            min_idxs = (
+                np.where(data[-1, ten_percent:-ten_percent] == min_val)[0] + ten_percent
+            )
             sc_down = min_idxs
             sr_down = np.ones_like(sc_down) * (data.shape[0] - 1)
             self._sink_indices = np.array([sr_down, sc_down], dtype="int32")
@@ -135,7 +144,6 @@ class UltrasoundConfidenceMap:
             sc_down = unique_cols
             # 2. Set sr_down to same size last row
             sr_down = np.ones_like(sc_down) * (data.shape[0] - 1)
-
 
             self._sink_indices = np.array([sr_down, sc_down], dtype="int32")
             seed = self.sub2ind(data.shape, sr_down, sc_down).astype("float64")
@@ -216,7 +224,6 @@ class UltrasoundConfidenceMap:
         diagonal_end = None
 
         for iter_idx, k in enumerate(edge_templates):
-
             Q = P[p + k]
 
             q = np.where(Q > 0)[0]
@@ -238,7 +245,7 @@ class UltrasoundConfidenceMap:
 
         # Horizontal penalty
         s[vertical_end:] += gamma
-        #s[vertical_end:diagonal_end] += gamma * np.sqrt(2) # --> In the paper it is sqrt(2) since the diagonal edges are longer yet does not exist in the original code
+        # s[vertical_end:diagonal_end] += gamma * np.sqrt(2) # --> In the paper it is sqrt(2) since the diagonal edges are longer yet does not exist in the original code
 
         # Normalize differences
         s = self.normalize(s)
@@ -262,20 +269,20 @@ class UltrasoundConfidenceMap:
         L.setdiag(D)
 
         return L
-    
-    def _solve_linear_system(self, D, rhs, tol=1.e-6, mode='scipy'):
 
-        if mode == 'scipy':
+    def _solve_linear_system(self, D, rhs, tol=1.0e-6, mode="scipy"):
+        if mode == "scipy":
             X = spsolve(D, rhs)
 
-        elif mode == 'octave':
+        elif mode == "octave":
             X = self.oc.mldivide(D, rhs)[:, 0]
 
-        elif mode == 'cg':
+        elif mode == "cg":
             from pyamg import ruge_stuben_solver
+
             lap_sparse = D.tocsr()
-            ml = ruge_stuben_solver(lap_sparse, coarse_solver='pinv')
-            M = ml.aspreconditioner(cycle='V')
+            ml = ruge_stuben_solver(lap_sparse, coarse_solver="pinv")
+            M = ml.aspreconditioner(cycle="V")
             maxiter = 200
             X, _ = cg(D, rhs, tol=tol, maxiter=maxiter, M=M)
 
@@ -328,7 +335,7 @@ class UltrasoundConfidenceMap:
         rhs = -B @ M  # type: ignore
 
         # Solve linear system
-        x = self._solve_linear_system(D, rhs, tol=1.e-6, mode=solve_mode)
+        x = self._solve_linear_system(D, rhs, tol=1.0e-6, mode=solve_mode)
 
         # Prepare output
         probabilities = np.zeros((N,), dtype="float64")
@@ -342,7 +349,9 @@ class UltrasoundConfidenceMap:
 
         return probabilities
 
-    def __call__(self, data: np.ndarray, sink_mask: Optional[np.ndarray] = None) -> np.ndarray:
+    def __call__(
+        self, data: np.ndarray, sink_mask: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         """Compute the confidence map
 
         Args:
@@ -371,7 +380,8 @@ class UltrasoundConfidenceMap:
         data = data * W
 
         # Find condidence values
-        map_ = self.confidence_estimation(data, seeds, labels, self.beta, self.gamma, self.solve_mode)
+        map_ = self.confidence_estimation(
+            data, seeds, labels, self.beta, self.gamma, self.solve_mode
+        )
 
         return map_
-

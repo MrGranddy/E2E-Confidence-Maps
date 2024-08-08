@@ -1,25 +1,37 @@
 import argparse
 import os
 
+import numpy as np
+from confidence_with_dg import confidence_map
 from PIL import Image
 
-import numpy as np
-
-from confidence_with_dg import confidence_map
-
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_path", type=str, default="render", help="Path to the directory containing the rendered images")
-    parser.add_argument("--participant_name", type=str, default="test", help="Name of the participant")
-    parser.add_argument("--destination_dir", type=str, default="output", help="Path to the directory where the confidence maps will be saved")
+    parser.add_argument(
+        "--input_path",
+        type=str,
+        default="render",
+        help="Path to the directory containing the rendered images",
+    )
+    parser.add_argument(
+        "--participant_name", type=str, default="test", help="Name of the participant"
+    )
+    parser.add_argument(
+        "--destination_dir",
+        type=str,
+        default="output",
+        help="Path to the directory where the confidence maps will be saved",
+    )
     args = parser.parse_args()
 
     # Set saving parameters
     confidence_map_type = "acyclic"
 
     # Get parameters
-    image_paths = [os.path.join(args.input_path, image_name) for image_name in os.listdir(args.input_path)]
+    image_paths = [
+        os.path.join(args.input_path, image_name)
+        for image_name in os.listdir(args.input_path)
+    ]
     num_images = len(image_paths)
     image_shape = np.array(Image.open(image_paths[0]).convert("L")).shape
 
@@ -33,7 +45,9 @@ if __name__ == "__main__":
         confidence_maps[i] = confidence_map(image_array)
 
         if (i + 1) % 20 == 0:
-            print(f"Processed {i + 1} of {num_images} images for participant {args.participant_name}")
+            print(
+                f"Processed {i + 1} of {num_images} images for participant {args.participant_name}"
+            )
 
     if not os.path.exists(args.destination_dir):
         os.makedirs(args.destination_dir)

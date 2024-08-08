@@ -34,6 +34,9 @@ for (( i=start_index; i<=end_index; i++ )); do
     # Create the temporary config file and capture the filename
     config_file=$(python "$python_script_path" "$dataset_dir" "$logdir")
 
+    # cat config_file
+    cat "$config_file"
+
     cd /home/vanessa_share/bugra/ultra-nerf-private
     python run_ultra_nerf.py --config "$config_file" --n_iters 100000
     cd /home/vanessa_share/bugra/dataset_project

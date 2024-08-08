@@ -2,12 +2,10 @@ import argparse
 import math
 import os
 
-import numpy as np
-
-from PIL import Image
-
-import SimpleITK as sitk
 import nibabel as nib
+import numpy as np
+import SimpleITK as sitk
+from PIL import Image
 
 
 def create_inverse_transform(transform):
@@ -66,7 +64,7 @@ def save_as_mha(file_path, image_data, poses, spacing):
 
     for i, pose in enumerate(poses):
         transform_key = f"Seq_Frame{i:04d}_ImageToReferenceTransform"
-        transform_line = ' '.join(map(str, pose.flatten().tolist()))
+        transform_line = " ".join(map(str, pose.flatten().tolist()))
         image.SetMetaData(transform_key, transform_line)
 
     sitk.WriteImage(image, file_path)
@@ -77,7 +75,9 @@ def main(args):
     image_data, poses, spacing = load_poses_and_images(args.input)
 
     # Compute the inverse transformation
-    inverse_transform = create_inverse_transform(create_linear_transform(0, 0, 0, 0, -30, -180))
+    inverse_transform = create_inverse_transform(
+        create_linear_transform(0, 0, 0, 0, -30, -180)
+    )
 
     # Apply the inverse transformation to the poses
     poses = apply_inverse_transform(poses, inverse_transform)
@@ -89,8 +89,12 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Converts an UltraNerf dataset to an MHA file.")
-    parser.add_argument("input", type=str, help="The input directory containing the UltraNerf dataset.")
+    parser = argparse.ArgumentParser(
+        description="Converts an UltraNerf dataset to an MHA file."
+    )
+    parser.add_argument(
+        "input", type=str, help="The input directory containing the UltraNerf dataset."
+    )
     parser.add_argument("output", type=str, help="The output MHA file.")
 
     args = parser.parse_args()
