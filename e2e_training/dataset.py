@@ -74,7 +74,6 @@ class CMDataset(Dataset):
         transform_pipeline = transforms.Compose(
             [
                 transforms.Resize((256, 128)),
-                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.5], std=[0.5]),
             ]
@@ -93,5 +92,8 @@ class CMDataset(Dataset):
         conf_map = Image.open(conf_map_path).convert("L")
 
         image, conf_map = self.transform(image, conf_map)
+
+        image = image.float()
+        conf_map = conf_map.float()
 
         return image, conf_map

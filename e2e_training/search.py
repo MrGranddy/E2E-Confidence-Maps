@@ -43,7 +43,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         limit_val_batches=PERCENT_VALID_EXAMPLES,
         enable_checkpointing=False,
         max_epochs=EPOCHS,
-        accelerator="auto",
+        accelerator="gpu",
         devices=1,
         callbacks=callbacks,
     )

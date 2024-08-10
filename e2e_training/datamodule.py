@@ -25,11 +25,11 @@ class CMDataModule(pl.LightningDataModule):
             self.test = CMDataset(self.images_dir, self.confidence_maps_dir, split="test")
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, pin_memory=True)
+        return DataLoader(self.train, batch_size=self.batch_size, shuffle=True, num_workers=7)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.val, batch_size=self.batch_size, shuffle=False, pin_memory=True)
+        return DataLoader(self.val, batch_size=self.batch_size, shuffle=False, num_workers=7)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(self.test, batch_size=self.batch_size, shuffle=False, pin_memory=True)
+        return DataLoader(self.test, batch_size=self.batch_size, shuffle=False, num_workers=7)
 
