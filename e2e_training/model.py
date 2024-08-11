@@ -8,9 +8,36 @@ from unet import UNet
 
 from vis_utils import visualize_predictions
 
+import torch
+
+def monotonic_decreasing_regularization(input_tensor):
+    """
+    Regularization function that rewards monotonically decreasing columns.
+
+    Args:
+        input_tensor (torch.Tensor): Input tensor of shape (N, C, H, W)
+    
+    Returns:
+        torch.Tensor: A scalar tensor representing the regularization loss.
+    """
+    # Calculate differences between adjacent elements along the height (H) dimension
+    # Use the 'diff' function which calculates the difference between adjacent elements along a specified dimension
+    differences = torch.diff(input_tensor, dim=2)
+    
+    # Since we want to reward monotonically decreasing values, penalize positive differences
+    # Use ReLU as it zeroes out negative differences (which are acceptable for monotonically decreasing)
+    # and keeps positive differences (which we want to penalize)
+    positive_differences = torch.relu(differences)
+
+    # Sum up all positive differences to get the total penalty
+    regularization_loss = positive_differences.sum(dim=(1, 2, 3))
+
+    return regularization_loss.mean()
+
+
 
 class DirectPredictionModule(pl.LightningModule):
-    def __init__(self, in_channels: int, out_channels: int, lr: float, num_images_to_log: int = 4) -> None:
+    def __init__(self, in_channels: int, out_channels: int, lr: float, num_images_to_log: int = 4, use_md_reg: bool = False) -> None:
         super().__init__()
 
         self.save_hyperparameters()
