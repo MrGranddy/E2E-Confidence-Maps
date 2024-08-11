@@ -49,6 +49,7 @@ class DirectPredictionModule(pl.LightningModule):
                 "lr": lr,
                 "num_images_to_log": num_images_to_log,
                 "use_md_reg": use_md_reg,
+                "md_reg_weight": md_reg_weight,
         })
 
         self.model = UNet(n_channels=in_channels, n_classes=out_channels, bilinear=True)
