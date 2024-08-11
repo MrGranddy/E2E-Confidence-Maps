@@ -15,7 +15,7 @@ EPOCHS = 30
 PERCENT_TRAIN_EXAMPLES = 1.0
 PERCENT_VALID_EXAMPLES = 1.0
 
-DIR = "../"
+DIR = "G:/"
 IMAGES_DIR = os.path.join(DIR, "CM_datasets/images")
 CONFIDENCE_MAPS_DIR = os.path.join(DIR, "CM_datasets/ultranerf")
 
@@ -28,7 +28,7 @@ def train() -> None:
         batch_size=BATCHSIZE,
     )
 
-    logger = TensorBoardLogger("logs", name="DirectPredictionModule")
+    logger = TensorBoardLogger("logs", name="DirectPredictionModuleWithMDReg")
 
     callbacks = [
         ModelCheckpoint(monitor="val_loss"),

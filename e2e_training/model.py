@@ -44,6 +44,7 @@ class DirectPredictionModule(pl.LightningModule):
 
         self.model = UNet(n_channels=in_channels, n_classes=out_channels, bilinear=True)
         self.criterion = torch.nn.MSELoss()
+        self.use_md_reg = use_md_reg
 
         self.train_losses = []
         self.val_losses = []
@@ -60,6 +61,12 @@ class DirectPredictionModule(pl.LightningModule):
         preds = self(images)
         loss = self.criterion(preds, conf_maps)
 
+        if self.use_md_reg:
+            # Calculate the regularization loss
+            regularization_loss = monotonic_decreasing_regularization(preds)
+            # Add the regularization loss to the main loss
+            loss += regularization_loss
+
         self.log("train_loss", loss.item())
         self.train_losses.append(loss.item())
 
@@ -70,6 +77,12 @@ class DirectPredictionModule(pl.LightningModule):
 
         preds = self(images)
         loss = self.criterion(preds, conf_maps)
+
+        if self.use_md_reg:
+            # Calculate the regularization loss
+            regularization_loss = monotonic_decreasing_regularization(preds)
+            # Add the regularization loss to the main loss
+            loss += regularization_loss
 
         # Log loss
         self.log("val_loss", loss.item())
