@@ -1,15 +1,17 @@
 import argparse
 import os
 
-import optuna
 import lightning.pytorch as pl
-
-from optuna.integration.pytorch_lightning import PyTorchLightningPruningCallback
-from lightning.pytorch.loggers import TensorBoardLogger
-from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor
-
+import optuna
 from datamodule import CMDataModule
+from lightning.pytorch.callbacks import (
+    EarlyStopping,
+    LearningRateMonitor,
+    ModelCheckpoint,
+)
+from lightning.pytorch.loggers import TensorBoardLogger
 from model import DirectPredictionModule
+from optuna.integration.pytorch_lightning import PyTorchLightningPruningCallback
 
 BATCHSIZE = 32
 N_TRIALS = 20
@@ -17,6 +19,7 @@ EPOCHS = 30
 PERCENT_TRAIN_EXAMPLES = 1.0
 PERCENT_VALID_EXAMPLES = 1.0
 DIR = os.getcwd()
+
 
 def objective(trial: optuna.trial.Trial) -> float:
 
@@ -65,7 +68,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    pruner = optuna.pruners.MedianPruner() if args.pruning else optuna.pruners.NopPruner()
+    pruner = (
+        optuna.pruners.MedianPruner() if args.pruning else optuna.pruners.NopPruner()
+    )
 
     study = optuna.create_study(direction="minimize", pruner=pruner)
     study.optimize(objective, n_trials=100, timeout=600)

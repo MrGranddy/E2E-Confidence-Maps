@@ -1,55 +1,64 @@
-import argparse
 import os
 
+import hydra
 import lightning.pytorch as pl
-
-from lightning.pytorch.loggers import TensorBoardLogger
-from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor
-
 from datamodule import CMDataModule
-from model import DirectPredictionModule
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.loggers import TensorBoardLogger
+from model import DirectPredictionModule, USAutoEncoderWithConfidenceAsVariance
+from omegaconf import DictConfig
 
-BATCHSIZE = 32
-LR = 1e-4
-EPOCHS = 30
-PERCENT_TRAIN_EXAMPLES = 1.0
-PERCENT_VALID_EXAMPLES = 1.0
+@hydra.main(config_path="configs", config_name="config", version_base=None)
+def train(cfg: DictConfig) -> None:
 
-DIR = "G:/"
-IMAGES_DIR = os.path.join(DIR, "CM_datasets/images")
-CONFIDENCE_MAPS_DIR = os.path.join(DIR, "CM_datasets/ultranerf")
+    if cfg.experimental_setup == "direct_prediction":
 
-def train() -> None:
+        model = DirectPredictionModule(
+            in_channels=cfg.model.in_channels,
+            out_channels=cfg.model.out_channels,
+            lr=cfg.train.lr,
+            num_images_to_log=cfg.logger.num_images_to_log,
+            use_md_reg=cfg.model.use_md_reg,
+        )
 
-    model = DirectPredictionModule(in_channels=1, out_channels=1, lr=LR)
+    elif cfg.experimental_setup == "autoencoder_with_confidence_as_variance":
+
+        model = USAutoEncoderWithConfidenceAsVariance(
+            in_channels=cfg.model.in_channels,
+            out_channels=cfg.model.out_channels,
+            lr=cfg.train.lr,
+            num_images_to_log=cfg.logger.num_images_to_log,
+        )
+
     datamodule = CMDataModule(
-        images_dir=IMAGES_DIR,
-        confidence_maps_dir=CONFIDENCE_MAPS_DIR,
-        batch_size=BATCHSIZE,
+        images_dir=cfg.data.images_dir,
+        confidence_maps_dir=cfg.data.confidence_maps_dir,
+        batch_size=cfg.train.batch_size,
     )
 
-    logger = TensorBoardLogger("logs", name="DirectPredictionModuleWithMDReg")
+    logger = TensorBoardLogger(cfg.logger.save_dir, name=cfg.logger.name)
 
     callbacks = [
-        ModelCheckpoint(monitor="val_loss"),
-        EarlyStopping(monitor="val_loss", patience=3)
+        ModelCheckpoint(monitor=cfg.callbacks.model_checkpoint.monitor),
+        EarlyStopping(
+            monitor=cfg.callbacks.early_stopping.monitor,
+            patience=cfg.callbacks.early_stopping.patience,
+        ),
     ]
 
     trainer = pl.Trainer(
         logger=logger,
-        limit_train_batches=PERCENT_TRAIN_EXAMPLES,
-        limit_val_batches=PERCENT_VALID_EXAMPLES,
-        enable_checkpointing=True,
-        max_epochs=EPOCHS,
-        accelerator="gpu",
-        devices=1,
+        limit_train_batches=cfg.train.limit_train_batches,
+        limit_val_batches=cfg.train.limit_val_batches,
+        enable_checkpointing=cfg.trainer.enable_checkpointing,
+        max_epochs=cfg.train.max_epochs,
+        accelerator=cfg.trainer.accelerator,
+        devices=cfg.trainer.devices,
         callbacks=callbacks,
     )
-    hyperparameters = dict(lr=LR, batch_size=BATCHSIZE)
-    trainer.logger.log_hyperparams(hyperparameters)
+    trainer.logger.log_hyperparams(cfg.train)
     trainer.fit(model, datamodule=datamodule)
 
 
 if __name__ == "__main__":
-
     train()
