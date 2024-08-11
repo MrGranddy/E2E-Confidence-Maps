@@ -39,6 +39,7 @@ class DirectPredictionModule(pl.LightningModule):
         lr: float,
         num_images_to_log: int = 4,
         use_md_reg: bool = False,
+        md_reg_weight: float = 0.0,
     ) -> None:
         super().__init__()
 
@@ -53,6 +54,7 @@ class DirectPredictionModule(pl.LightningModule):
         self.model = UNet(n_channels=in_channels, n_classes=out_channels, bilinear=True)
         self.criterion = torch.nn.MSELoss()
         self.use_md_reg = use_md_reg
+        self.md_reg_weight = md_reg_weight
 
         self.train_losses = []
         self.val_losses = []
