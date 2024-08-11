@@ -19,6 +19,7 @@ def train(cfg: DictConfig) -> None:
             lr=cfg.train.lr,
             num_images_to_log=cfg.logger.num_images_to_log,
             use_md_reg=cfg.model.use_md_reg,
+            md_reg_weight=cfg.model.md_reg_weight,
         )
 
     elif cfg.experimental_setup == "autoencoder_with_confidence_as_variance":

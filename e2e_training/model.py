@@ -73,7 +73,7 @@ class DirectPredictionModule(pl.LightningModule):
 
         if self.use_md_reg:
             # Calculate the regularization loss
-            regularization_loss = monotonic_decreasing_regularization(preds)
+            regularization_loss = monotonic_decreasing_regularization(preds) * self.md_reg_weight
             # Add the regularization loss to the main loss
             loss += regularization_loss
 
@@ -92,7 +92,7 @@ class DirectPredictionModule(pl.LightningModule):
 
         if self.use_md_reg:
             # Calculate the regularization loss
-            regularization_loss = monotonic_decreasing_regularization(preds)
+            regularization_loss = monotonic_decreasing_regularization(preds) * self.md_reg_weight
             # Add the regularization loss to the main loss
             loss += regularization_loss
 
