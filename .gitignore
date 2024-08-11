@@ -169,6 +169,7 @@ all_params/
 CM_datasets/
 *.png
 events.out.tfevents.*
+*.ckpt
 
 # Not mine scripts
 confidence_with_dg.py
