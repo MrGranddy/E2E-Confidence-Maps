@@ -171,6 +171,7 @@ CM_datasets/
 events.out.tfevents.*
 *.ckpt
 outputs/
+output/
 
 # Not mine scripts
 confidence_with_dg.py
