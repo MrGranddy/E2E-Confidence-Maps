@@ -172,6 +172,7 @@ events.out.tfevents.*
 *.ckpt
 outputs/
 output/
+weights/
 
 # Not mine scripts
 confidence_with_dg.py
