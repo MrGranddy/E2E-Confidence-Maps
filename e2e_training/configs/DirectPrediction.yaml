@@ -7,11 +7,11 @@ model:
   md_reg_weight: 0.0
 
 data:
-  images_dir: "G:/CM_datasets/images"
-  confidence_maps_dir: "G:/CM_datasets/ultranerf"
+  images_dir: "../CM_datasets/images"
+  confidence_maps_dir: "../CM_datasets/ultranerf"
 
 train:
-  lr: 1e-4
+  lr: 1e-5
   batch_size: 32
   max_epochs: 30
   limit_train_batches: 1.0

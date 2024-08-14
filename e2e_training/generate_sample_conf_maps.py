@@ -11,10 +11,10 @@ from dataset import CMDataset
 from model import DirectPredictionModule
 
 # Constants
-IMAGE_PATH = "G:/CM_datasets/images/DAB_AN/620.png"
-CONF_MAP_PATH = "G:/CM_datasets/ultranerf/DAB_AN/620.png"
-CHECKPOINT_PATH = "./logs/DirectPredictionModuleWithMDReg/version_4/checkpoints/epoch=29-step=79440.ckpt"
-MODEL_NAME = "DirectPredictionModuleWithMDReg0.001"
+IMAGE_PATH = "../CM_datasets/images/DAB_AN/620.png"
+CONF_MAP_PATH = "../CM_datasets/ultranerf/DAB_AN/620.png"
+CHECKPOINT_PATH = "/home/vanessa_share/bugra/dataset_project/e2e_training/logs/DirectPredictionModule/version_2/checkpoints/epoch=23-step=63552.ckpt"
+MODEL_NAME = "DirectPredictionModule"
 OUTPUT_DIR = "output"
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
