@@ -1,8 +1,9 @@
 from typing import Optional
 
 import lightning.pytorch as pl
-from dataset import CMDataset
 from torch.utils.data import DataLoader
+
+from e2e_training.dataset import CMDataset
 
 
 class CMDataModule(pl.LightningDataModule):
@@ -31,15 +32,27 @@ class CMDataModule(pl.LightningDataModule):
 
     def train_dataloader(self) -> DataLoader:
         return DataLoader(
-            self.train, batch_size=self.batch_size, shuffle=True, num_workers=7, persistent_workers=True
+            self.train,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=7,
+            persistent_workers=True,
         )
 
     def val_dataloader(self) -> DataLoader:
         return DataLoader(
-            self.val, batch_size=self.batch_size, shuffle=False, num_workers=7, persistent_workers=True
+            self.val,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=7,
+            persistent_workers=True,
         )
 
     def test_dataloader(self) -> DataLoader:
         return DataLoader(
-            self.test, batch_size=self.batch_size, shuffle=False, num_workers=7, persistent_workers=True
+            self.test,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=7,
+            persistent_workers=True,
         )

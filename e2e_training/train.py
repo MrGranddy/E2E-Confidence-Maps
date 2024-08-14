@@ -2,11 +2,16 @@ import os
 
 import hydra
 import lightning.pytorch as pl
-from datamodule import CMDataModule
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
-from model import DirectPredictionModule, USAutoEncoderWithConfidenceAsVariance
 from omegaconf import DictConfig
+
+from e2e_training.datamodule import CMDataModule
+from e2e_training.model import (
+    DirectPredictionModule,
+    USAutoEncoderWithConfidenceAsVariance,
+)
+
 
 @hydra.main(config_path="configs", config_name="config", version_base=None)
 def train(cfg: DictConfig) -> None:

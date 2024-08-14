@@ -3,15 +3,16 @@ import os
 
 import lightning.pytorch as pl
 import optuna
-from datamodule import CMDataModule
 from lightning.pytorch.callbacks import (
     EarlyStopping,
     LearningRateMonitor,
     ModelCheckpoint,
 )
 from lightning.pytorch.loggers import TensorBoardLogger
-from model import DirectPredictionModule
 from optuna.integration.pytorch_lightning import PyTorchLightningPruningCallback
+
+from e2e_training.datamodule import CMDataModule
+from e2e_training.model import DirectPredictionModule
 
 BATCHSIZE = 32
 N_TRIALS = 20

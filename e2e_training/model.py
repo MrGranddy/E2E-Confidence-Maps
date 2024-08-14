@@ -2,8 +2,9 @@ from typing import List
 
 import lightning.pytorch as pl
 import torch
-from unet import UNet
-from vis_utils import visualize_predictions
+
+from e2e_training.unet import UNet
+from e2e_training.vis_utils import visualize_predictions
 
 
 def monotonic_decreasing_regularization(input_tensor):
@@ -43,14 +44,16 @@ class DirectPredictionModule(pl.LightningModule):
     ) -> None:
         super().__init__()
 
-        self.save_hyperparameters({
+        self.save_hyperparameters(
+            {
                 "in_channels": in_channels,
                 "out_channels": out_channels,
                 "lr": lr,
                 "num_images_to_log": num_images_to_log,
                 "use_md_reg": use_md_reg,
                 "md_reg_weight": md_reg_weight,
-        })
+            }
+        )
 
         self.model = UNet(n_channels=in_channels, n_classes=out_channels, bilinear=True)
         self.criterion = torch.nn.MSELoss()
@@ -74,7 +77,9 @@ class DirectPredictionModule(pl.LightningModule):
 
         if self.use_md_reg:
             # Calculate the regularization loss
-            regularization_loss = monotonic_decreasing_regularization(preds) * self.md_reg_weight
+            regularization_loss = (
+                monotonic_decreasing_regularization(preds) * self.md_reg_weight
+            )
             # Add the regularization loss to the main loss
             loss += regularization_loss
 
@@ -93,7 +98,9 @@ class DirectPredictionModule(pl.LightningModule):
 
         if self.use_md_reg:
             # Calculate the regularization loss
-            regularization_loss = monotonic_decreasing_regularization(preds) * self.md_reg_weight
+            regularization_loss = (
+                monotonic_decreasing_regularization(preds) * self.md_reg_weight
+            )
             # Add the regularization loss to the main loss
             loss += regularization_loss
 
@@ -131,12 +138,14 @@ class USAutoEncoderWithConfidenceAsVariance(pl.LightningModule):
     ) -> None:
         super().__init__()
 
-        self.save_hyperparameters({
+        self.save_hyperparameters(
+            {
                 "in_channels": in_channels,
                 "out_channels": out_channels,
                 "lr": lr,
                 "num_images_to_log": num_images_to_log,
-        })
+            }
+        )
 
         self.model = UNet(n_channels=in_channels, n_classes=out_channels, bilinear=True)
         self.criterion = torch.nn.MSELoss()
