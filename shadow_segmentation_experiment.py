@@ -277,10 +277,24 @@ def run_experiment(config):
         plt.tight_layout()
 
         plt.savefig(
-            os.path.join(experiment_output_dir, f"image_{i}.png"), bbox_inches="tight"
+            os.path.join(experiment_output_dir, f"plt_{i}.png"), bbox_inches="tight"
         )
 
         plt.close()
+
+        Image.fromarray((test_images[i] * 255).astype(np.uint8)).save(
+            os.path.join(experiment_output_dir, f"image_{i}.png")
+        )
+
+        Image.fromarray((predictions[i] * 255).astype(np.uint8)).save(
+            os.path.join(experiment_output_dir, f"pred_{i}.png")
+        )
+
+        Image.fromarray((trimmed_ground_truth[i] * 255).astype(np.uint8)).save(
+            os.path.join(experiment_output_dir, f"gt_{i}.png")
+        )
+
+
     
 
 
