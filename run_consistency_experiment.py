@@ -35,8 +35,9 @@ for cm_type in cm_types:
 
         for crop in crops:
 
-            path_tree[cm_type][dataset][crop] = os.path.join(data_path, dataset, crop, f"cms_{cm_type}.npy")
-
+            path_tree[cm_type][dataset][crop] = os.path.join(
+                data_path, dataset, crop, f"cms_{cm_type}.npy"
+            )
 
 
 def calculate_psnr(img1, img2):
@@ -92,7 +93,10 @@ for cm_type in path_tree:
 
         # First left and right experiments
         try:
-            partial = np.load(path_tree[cm_type][dataset]["partial"]).astype(np.float32) / 255.0
+            partial = (
+                np.load(path_tree[cm_type][dataset]["partial"]).astype(np.float32)
+                / 255.0
+            )
         except FileNotFoundError:
             print(f"Partial not found for {cm_type}-{dataset}")
             continue
