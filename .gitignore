@@ -173,6 +173,7 @@ events.out.tfevents.*
 outputs/
 output/
 weights/
+shadow_segmentation_experiment_results/
 
 # Not mine scripts
 confidence_with_dg.py
