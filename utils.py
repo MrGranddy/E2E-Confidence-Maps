@@ -1,7 +1,9 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import nibabel as nib
 import numpy as np
+
+from scipy.spatial.distance import directed_hausdorff
 
 
 def convert_labels_to_shadow_map(labels: np.ndarray, bone_idx: int) -> np.ndarray:
@@ -89,7 +91,7 @@ def generate_patch_dataset(
             patch_label = shadow_map[d, x + patch_size // 2, y + patch_size // 2]
 
             if conf_map is not None:
-                patch_conf_map = conf_map[x : x + patch_size, y : y + patch_size]
+                patch_conf_map = conf_map[d, x : x + patch_size, y : y + patch_size]
                 patch = np.concatenate(
                     [patch_image.flatten(), patch_conf_map.flatten()]
                 )
@@ -105,7 +107,9 @@ def generate_patch_dataset(
     return patches, labels
 
 
-def patchify_single_image(image: np.ndarray, patch_size: int) -> np.ndarray:
+def patchify_single_image(
+    image: np.ndarray, conf_map: Optional[np.ndarray], patch_size: int
+) -> np.ndarray:
     """Generates patches from a single image.
 
     Args:
@@ -121,7 +125,17 @@ def patchify_single_image(image: np.ndarray, patch_size: int) -> np.ndarray:
 
     for i in range(image.shape[0] - patch_size + 1):
         for j in range(image.shape[1] - patch_size + 1):
-            patch = image[i : i + patch_size, j : j + patch_size].flatten()
+
+            image_vector = image[i : i + patch_size, j : j + patch_size].flatten()
+
+            if conf_map is not None:
+                conf_map_vector = conf_map[
+                    i : i + patch_size, j : j + patch_size
+                ].flatten()
+                patch = np.concatenate([image_vector, conf_map_vector])
+            else:
+                patch = image_vector
+
             patches.append(patch)
 
     patches = np.stack(patches)
@@ -148,3 +162,48 @@ def depatchify_single_image_prediction(
     )
 
     return image
+
+def evaluate_segmentation(preds: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
+    """Evaluates the segmentation predictions.
+
+    Args:
+        preds (np.ndarray): The predicted shadow maps.
+        labels (np.ndarray): The ground truth shadow maps.
+
+    Returns:
+        metrics (Dict[str, float]): A dictionary containing the metrics.
+    """
+
+    metrics = {
+        "precision": 0.0,
+        "dice": 0.0,
+        "hausdorff": 0.0,
+    }
+
+    num_images = preds.shape[0]
+
+    for i in range(num_images):
+
+        pred = preds[i]
+        label = labels[i]
+
+        # Calculate precision
+        tp = np.sum(np.logical_and(pred == 1, label == 1))
+        fp = np.sum(np.logical_and(pred == 1, label == 0))
+        precision = tp / (tp + fp + 1e-6)
+
+        # Calculate dice coefficient
+        dice = 2 * np.sum(np.logical_and(pred == 1, label == 1)) / (np.sum(pred) + np.sum(label) + 1e-6)
+
+        # Calculate Hausdorff distance
+        hd1 = directed_hausdorff(pred, label)[0]
+        hd2 = directed_hausdorff(label, pred)[0]
+
+        # The Hausdorff distance is the maximum of the two directed Hausdorff distances
+        hd = float(max(hd1, hd2))
+
+        metrics["precision"] += precision / num_images
+        metrics["dice"] += dice / num_images
+        metrics["hausdorff"] += hd / num_images
+
+    return metrics

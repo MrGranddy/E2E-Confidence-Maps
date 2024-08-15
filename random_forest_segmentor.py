@@ -3,10 +3,10 @@ from sklearn.ensemble import RandomForestClassifier
 
 class Segmentor:
 
-    def __init__(self, seed=None):
+    def __init__(self, n_estimators, seed=None):
 
         self.rf = RandomForestClassifier(
-            n_estimators=25, max_depth=5, random_state=seed
+            n_estimators=n_estimators, max_depth=5, random_state=seed
         )
 
     def train(self, patches, labels):
